@@ -1,14 +1,30 @@
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Scanner;
+
+
 
 
 
 public class App {
+
+
+
     public static void main(String[] args) throws Exception {
 
+        Db_Table_CheckerAndCreator();
+        FilmekReader();
+
+       
+    }
+
+
+
+
+    private static void Db_Table_CheckerAndCreator(){
         String sqlCheckForDatabase = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'oscar'";
         String sqlCheckForTable = "SELECT TABLE_NAME FROM information_schema.tables  WHERE table_schema = 'oscar' AND table_name = 'filmek'" ;
         String sqlCreateDataBase = "CREATE DATABASE oscar CHARACTER SET utf8 COLLATE utf8_hungarian_ci";
@@ -16,7 +32,6 @@ public class App {
 
         try{
           
-
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306","root","rootpassword");
            
             PreparedStatement ps = connection.prepareStatement(sqlCheckForDatabase);
@@ -55,5 +70,34 @@ public class App {
         }catch(Exception e){
             System.out.println(e);
         }
+    }
+
+
+
+
+    private static void FilmekReader(){
+
+       
+        
+        try{
+            File fileToRead = new File("filmek.txt");
+            Scanner scanner = new Scanner(fileToRead);
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306","root","rootpassword");
+            scanner.nextLine();
+            while(scanner.hasNextLine()){
+                String[] LineData = scanner.nextLine().split(";");
+                String sqlInsertIntoDb = "insert into oscar.filmek values (" + LineData[0] +","+  LineData[1] +","+ LineData[2] +","+ LineData[3]+","+ LineData[4] + ");" ;
+                System.out.println(sqlInsertIntoDb);
+                PreparedStatement insertStmnt = connection.prepareStatement(sqlInsertIntoDb);
+                insertStmnt.execute();
+                System.out.println("line inserted");
+
+            }
+            scanner.close();
+
+        }catch(Exception e){
+            System.out.println(e);
+        }
+
     }
 }
